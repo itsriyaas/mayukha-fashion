@@ -13,19 +13,13 @@ import StarRatingComponent from "../common/star-rating";
 import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
   const [selectedImage, setSelectedImage] = useState(productDetails?.image);
+  const [selectedSize, setSelectedSize] = useState(""); // single size selection
+
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -38,17 +32,25 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   }
 
   function handleAddToCart(getCurrentProductId, getTotalStock) {
+    if (!selectedSize) {
+      toast({
+        title: "Please select a size before adding to cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.size === selectedSize
       );
       if (indexOfCurrentItem > -1) {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
         if (getQuantity + 1 > getTotalStock) {
           toast({
-            title: `Only ${getQuantity} quantity can be added for this item`,
+            title: `Only ${getQuantity} quantity can be added for size ${selectedSize}`,
             variant: "destructive",
           });
           return;
@@ -60,12 +62,13 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       addToCart({
         userId: user?.id,
         productId: getCurrentProductId,
+        size: selectedSize,
         quantity: 1,
       })
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        toast({ title: "Product is added to cart" });
+        toast({ title: `Size ${selectedSize} added to cart` });
       }
     });
   }
@@ -75,6 +78,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     dispatch(setProductDetails());
     setRating(0);
     setReviewMsg("");
+    setSelectedSize("");
   }
 
   function handleAddReview() {
@@ -113,15 +117,17 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     ? productDetails.images
     : [productDetails?.image];
 
+  // Split sizes by comma if they are stored as a single string
+ const sizes = Array.isArray(productDetails?.sizes)
+    ? productDetails.sizes.flatMap(s => s.split(",").map(size => size.trim()))
+    : [];
+
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent
-        className="max-h-[90vh] overflow-y-auto sm:p-6 md:p-8 w-full sm:max-w-[95vw] lg:max-w-[80vw]"
-      >
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:p-6 md:p-8 w-full sm:max-w-[95vw] lg:max-w-[80vw]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* LEFT SIDE - Thumbnails + Main Image */}
+          {/* LEFT SIDE */}
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* Thumbnails */}
             <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto">
               {images.map((img, idx) => (
                 <img
@@ -129,15 +135,12 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                   src={img}
                   alt="thumbnail"
                   className={`w-20 h-20 object-cover rounded cursor-pointer border flex-shrink-0 ${
-                    selectedImage === img
-                      ? "border-primary"
-                      : "border-gray-200"
+                    selectedImage === img ? "border-primary" : "border-gray-200"
                   }`}
                   onClick={() => setSelectedImage(img)}
                 />
               ))}
             </div>
-            {/* Main Image */}
             <div className="flex-1">
               <img
                 src={selectedImage}
@@ -147,13 +150,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             </div>
           </div>
 
-          {/* RIGHT SIDE - Details */}
+          {/* RIGHT SIDE */}
           <div>
-            {/* Title */}
             <h1 className="text-2xl sm:text-3xl font-extrabold">
               {productDetails?.title}
             </h1>
-            {/* Brand + Rating */}
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className="text-gray-500">
                 Brands : <span className="font-semibold">Mayukha Fashion</span>
@@ -162,7 +163,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               <span>({reviews?.length || 0} Reviews)</span>
             </div>
 
-            {/* Price */}
             <div className="flex flex-wrap items-center gap-3 mt-3">
               {productDetails?.salePrice > 0 && (
                 <span className="text-gray-500 line-through text-lg">
@@ -180,19 +180,45 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               </span>
             </div>
 
-            {/* Short description */}
             <p className="text-muted-foreground mt-3">
               {productDetails?.description}
             </p>
-
-            {/* Free shipping */}
             <p className="mt-2 font-medium">
               Free Shipping (Est. Delivery Time 2-3 Days)
             </p>
 
-            {/* Quantity + Add to cart */}
+            {/* SINGLE SIZE SELECTION */}
+{sizes.length > 0 && (
+  <div className="mt-4">
+    <Label>Select Size</Label>
+    <div className="flex flex-wrap gap-3 mt-2">
+      {sizes.map((size, idx) => (
+        <label
+          key={idx}
+          className={`cursor-pointer px-4 py-2 border rounded flex items-center justify-center
+            ${selectedSize === size
+              ? "bg-red-500 text-white border-red-500"
+              : "bg-white text-black border-gray-300"
+            }`}
+        >
+          <input
+            type="radio"
+            name="product-size"
+            value={size}
+            checked={selectedSize === size}
+            onChange={() => setSelectedSize(size)}
+            className="hidden"
+          />
+          {size}
+        </label>
+      ))}
+    </div>
+  </div>
+)}
+
+
+            {/* ADD TO CART */}
             <div className="flex flex-wrap items-center gap-3 mt-4">
-              
               {productDetails?.totalStock === 0 ? (
                 <Button className="opacity-60 cursor-not-allowed">
                   Out of Stock
@@ -212,7 +238,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               )}
             </div>
 
-            {/* Tabs */}
+            {/* TABS */}
             <Tabs defaultValue="description" className="mt-6">
               <TabsList className="flex-wrap">
                 <TabsTrigger value="description">Description</TabsTrigger>
@@ -226,7 +252,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 </p>
               </TabsContent>
               <TabsContent value="reviews">
-                {/* Reviews List */}
                 <div className="max-h-[250px] overflow-auto p-4">
                   {reviews && reviews.length > 0 ? (
                     reviews.map((reviewItem, idx) => (
@@ -252,7 +277,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                   )}
                 </div>
 
-                {/* Add Review Form */}
                 <div className="mt-6 flex flex-col gap-2">
                   <Label>Write a review</Label>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">

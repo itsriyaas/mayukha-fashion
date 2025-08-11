@@ -31,8 +31,10 @@ function ShoppingProductTile({
             </Badge>
           ) : null}
         </div>
+
         <CardContent className="p-4">
           <h2 className="text-xl font-bold mb-2">{product?.title}</h2>
+
           <div className="flex justify-between items-center mb-2">
             <span className="text-[16px] text-muted-foreground">
               {categoryOptionsMap[product?.category]}
@@ -41,6 +43,7 @@ function ShoppingProductTile({
               {brandOptionsMap[product?.brand]}
             </span>
           </div>
+
           <div className="flex justify-between items-center mb-2">
             <span
               className={`${
@@ -49,14 +52,30 @@ function ShoppingProductTile({
             >
               ₹{product?.price}
             </span>
-            {product?.salePrice > 0 ? (
+            {product?.salePrice > 0 && (
               <span className="text-lg font-semibold text-primary">
                 ₹{product?.salePrice}
               </span>
-            ) : null}
+            )}
           </div>
+
+          {/* ✅ Show available sizes */}
+          {Array.isArray(product?.sizes) && product.sizes.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {product.sizes.map((size) => (
+                <Badge
+                  key={size}
+                  variant="outline"
+                  className="px-2 py-1 text-sm"
+                >
+                  {size}
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </div>
+
       <CardFooter>
         {product?.totalStock === 0 ? (
           <Button className="w-full opacity-60 cursor-not-allowed">

@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/use-toast";
-import { addProductFormElements } from "@/config";
+import { addProductFormElements } from "@/config/index";
 import {
   addNewProduct,
   deleteProduct,
@@ -29,11 +29,18 @@ const initialFormData = {
   salePrice: "",
   totalStock: "",
   averageReview: 0,
+  sizes: "", // Store as comma-separated string in form
 };
 
+// Convert comma-separated string to array for backend
+const normalizeSizes = (sizesStr) =>
+  sizesStr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 function AdminProducts() {
-  const [openCreateProductsDialog, setOpenCreateProductsDialog] =
-    useState(false);
+  const [openCreateProductsDialog, setOpenCreateProductsDialog] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
   const [imageFile, setImageFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
@@ -47,44 +54,49 @@ function AdminProducts() {
   function onSubmit(event) {
     event.preventDefault();
 
-    currentEditedId !== null
-      ? dispatch(
-          editProduct({
-            id: currentEditedId,
-            formData,
-          })
-        ).then((data) => {
-          console.log(data, "edit");
+    const cleanedFormData = {
+      ...formData,
+      sizes: normalizeSizes(formData.sizes),
+    };
 
-          if (data?.payload?.success) {
-            dispatch(fetchAllProducts());
-            setFormData(initialFormData);
-            setOpenCreateProductsDialog(false);
-            setCurrentEditedId(null);
-          }
+    if (currentEditedId !== null) {
+      dispatch(
+        editProduct({
+          id: currentEditedId,
+          formData: cleanedFormData,
         })
-      : dispatch(
-          addNewProduct({
-            ...formData,
-            image: uploadedImageUrl,
-          })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllProducts());
-            setOpenCreateProductsDialog(false);
-            setImageFile(null);
-            setFormData(initialFormData);
-            toast({
-              title: "Product add successfully",
-            });
-          }
-        });
+      ).then((data) => {
+        if (data?.payload?.success) {
+          dispatch(fetchAllProducts());
+          setFormData(initialFormData);
+          setOpenCreateProductsDialog(false);
+          setCurrentEditedId(null);
+          toast({ title: "Product updated successfully" });
+        }
+      });
+    } else {
+      dispatch(
+        addNewProduct({
+          ...cleanedFormData,
+          image: uploadedImageUrl,
+        })
+      ).then((data) => {
+        if (data?.payload?.success) {
+          dispatch(fetchAllProducts());
+          setOpenCreateProductsDialog(false);
+          setImageFile(null);
+          setFormData(initialFormData);
+          toast({ title: "Product added successfully" });
+        }
+      });
+    }
   }
 
   function handleDelete(getCurrentProductId) {
     dispatch(deleteProduct(getCurrentProductId)).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchAllProducts());
+        toast({ title: "Product deleted" });
       }
     });
   }
@@ -92,15 +104,24 @@ function AdminProducts() {
   function isFormValid() {
     return Object.keys(formData)
       .filter((currentKey) => currentKey !== "averageReview")
-      .map((key) => formData[key] !== "")
-      .every((item) => item);
+      .every((key) => formData[key] && formData[key].toString().trim() !== "");
   }
 
   useEffect(() => {
     dispatch(fetchAllProducts());
   }, [dispatch]);
 
-  console.log(formData, "productList");
+  function handleEdit(product) {
+    setOpenCreateProductsDialog(true);
+    setCurrentEditedId(product?._id);
+    setFormData({
+      ...product,
+      sizes: Array.isArray(product?.sizes)
+        ? product.sizes.join(", ")
+        : product.sizes || "",
+    });
+    setUploadedImageUrl(product?.image || "");
+  }
 
   return (
     <Fragment>
@@ -109,19 +130,20 @@ function AdminProducts() {
           Add New Product
         </Button>
       </div>
+
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
         {productList && productList.length > 0
           ? productList.map((productItem) => (
               <AdminProductTile
-                setFormData={setFormData}
-                setOpenCreateProductsDialog={setOpenCreateProductsDialog}
-                setCurrentEditedId={setCurrentEditedId}
-                product={productItem}
+                key={productItem._id}
                 handleDelete={handleDelete}
+                product={productItem}
+                onEdit={handleEdit}
               />
             ))
           : null}
       </div>
+
       <Sheet
         open={openCreateProductsDialog}
         onOpenChange={() => {
@@ -136,6 +158,7 @@ function AdminProducts() {
               {currentEditedId !== null ? "Edit Product" : "Add New Product"}
             </SheetTitle>
           </SheetHeader>
+
           <ProductImageUpload
             imageFile={imageFile}
             setImageFile={setImageFile}
@@ -145,6 +168,7 @@ function AdminProducts() {
             imageLoadingState={imageLoadingState}
             isEditMode={currentEditedId !== null}
           />
+
           <div className="py-6">
             <CommonForm
               onSubmit={onSubmit}

@@ -98,6 +98,13 @@ export const addProductFormElements = [
     type: "number",
     placeholder: "Enter total stock",
   },
+ {
+    label: "Available Sizes (comma separated)",
+    name: "sizes",
+    componentType: "input",
+    type: "text",
+    placeholder: "e.g. S, M, L, XL",
+  },
 ];
 
 export const shoppingViewHeaderMenuItems = [

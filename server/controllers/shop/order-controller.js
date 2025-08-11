@@ -59,6 +59,7 @@ const capturePayment = async (req, res) => {
       cartItems: orderData.cartItems,
       addressInfo: orderData.addressInfo,
       totalAmount: orderData.totalAmount,
+      sizes: orderData.sizes || [],
       paymentId,
       razorpayOrderId: orderId,
       paymentStatus: "paid",

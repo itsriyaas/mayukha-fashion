@@ -3,9 +3,7 @@ import { Card, CardContent, CardFooter } from "../ui/card";
 
 function AdminProductTile({
   product,
-  setFormData,
-  setOpenCreateProductsDialog,
-  setCurrentEditedId,
+  onEdit,
   handleDelete,
 }) {
   return (
@@ -20,6 +18,17 @@ function AdminProductTile({
         </div>
         <CardContent>
           <h2 className="text-xl font-bold mb-2 mt-2">{product?.title}</h2>
+
+          {/* Show all sizes as comma-separated list */}
+          {product?.sizes?.length > 0 && (
+            <div className="mb-2">
+              <span className="font-medium text-sm">Sizes: </span>
+              <span className="text-sm text-gray-700">
+                {product.sizes.join(", ")}
+              </span>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-2">
             <span
               className={`${
@@ -28,22 +37,20 @@ function AdminProductTile({
             >
               ₹{product?.price}
             </span>
-            {product?.salePrice > 0 ? (
+            {product?.salePrice > 0 && (
               <span className="text-lg font-bold">₹{product?.salePrice}</span>
-            ) : null}
+            )}
           </div>
         </CardContent>
+
         <CardFooter className="flex justify-between items-center">
+          <Button onClick={() => onEdit(product)}>Edit</Button>
           <Button
-            onClick={() => {
-              setOpenCreateProductsDialog(true);
-              setCurrentEditedId(product?._id);
-              setFormData(product);
-            }}
+            variant="destructive"
+            onClick={() => handleDelete(product?._id)}
           >
-            Edit
+            Delete
           </Button>
-          <Button onClick={() => handleDelete(product?._id)}>Delete</Button>
         </CardFooter>
       </div>
     </Card>

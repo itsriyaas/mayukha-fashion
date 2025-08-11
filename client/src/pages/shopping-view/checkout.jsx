@@ -58,6 +58,7 @@ function ShoppingCheckout() {
       image: item?.image,
       price: item?.salePrice > 0 ? item?.salePrice : item?.price,
       quantity: item?.quantity,
+      size: item?.size, // 👈 include size
     })),
     addressInfo: {
       addressId: currentSelectedAddress?._id,
@@ -169,7 +170,7 @@ function ShoppingCheckout() {
         <div className="flex flex-col gap-4">
           {cartItems?.items?.length > 0 &&
             cartItems.items.map((item) => (
-              <UserCartItemsContent key={item.productId} cartItem={item} />
+              <UserCartItemsContent key={item.productId  + (item.size || "")} cartItem={item} />
             ))}
 
           <div className="mt-8 space-y-4">

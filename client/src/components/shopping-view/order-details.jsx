@@ -48,15 +48,22 @@ function ShoppingOrderDetailsView({ orderDetails }) {
             </Label>
           </div>
         </div>
+
         <Separator />
+
+        {/* Order Details with Size */}
         <div className="grid gap-4">
           <div className="grid gap-2">
             <div className="font-medium">Order Details</div>
             <ul className="grid gap-3">
               {orderDetails?.cartItems && orderDetails?.cartItems.length > 0
-                ? orderDetails?.cartItems.map((item) => (
-                    <li className="flex items-center justify-between">
+                ? orderDetails.cartItems.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex flex-wrap items-center justify-between gap-2"
+                    >
                       <span>Title: {item.title}</span>
+                      <span>Size: {item.size || "N/A"}</span>
                       <span>Quantity: {item.quantity}</span>
                       <span>Price: ₹{item.price}</span>
                     </li>
@@ -65,6 +72,8 @@ function ShoppingOrderDetailsView({ orderDetails }) {
             </ul>
           </div>
         </div>
+
+        {/* Shipping Info */}
         <div className="grid gap-4">
           <div className="grid gap-2">
             <div className="font-medium">Shipping Info</div>
