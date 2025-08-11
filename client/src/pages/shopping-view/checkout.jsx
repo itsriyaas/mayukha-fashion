@@ -48,7 +48,7 @@ function ShoppingCheckout() {
     try {
       // Step 1: Create order from backend
       const { data } = await axios.post(
-  `${import.meta.env.VITE_API_URL}/payment/create-order`,
+  `${import.meta.env.VITE_API_URL}/api/shop/order/payment/create-order`,
   {
     userId: user?.id,
     cartId: cartItems?._id,
@@ -91,7 +91,7 @@ function ShoppingCheckout() {
           try {
             // Step 3: Send payment details to backend for verification & order creation
             const verifyRes = await axios.post(
-              `${import.meta.env.VITE_API_URL}/payment/capture`,
+              `${import.meta.env.VITE_API_URL}/api/shop/order/payment/capture`,
               {
                 paymentId: response.razorpay_payment_id,
                 orderId: response.razorpay_order_id,
