@@ -11,8 +11,6 @@ function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
   const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
-  const [selectedSizes, setSelectedSizes] = useState({}); // 🆕 Track selected sizes
-
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -32,14 +30,6 @@ function ShoppingCheckout() {
     document.body.appendChild(script);
   }, []);
 
-  // 🆕 Handle size selection
-  const handleSizeChange = (productId, size) => {
-    setSelectedSizes((prev) => ({
-      ...prev,
-      [productId]: size,
-    }));
-  };
-
   async function handleInitiateRazorpayPayment() {
     if (!cartItems?.items?.length) {
       return toast({
@@ -55,48 +45,38 @@ function ShoppingCheckout() {
       });
     }
 
-    // 🆕 Ensure all sizes are selected
-    const missingSize = cartItems.items.some(
-      (item) => !selectedSizes[item.productId]
-    );
-    if (missingSize) {
-      return toast({
-        title: "Please select sizes for all products before proceeding.",
-        variant: "destructive",
-      });
-    }
-
     try {
       // Step 1: Create order from backend
       const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/shop/order/payment/create-order`,
-        {
-          userId: user?.id,
-          cartId: cartItems?._id,
-          cartItems: cartItems.items.map((item) => ({
-            productId: item?.productId,
-            title: item?.title,
-            image: item?.image,
-            price: item?.salePrice > 0 ? item?.salePrice : item?.price,
-            quantity: item?.quantity,
-            size: selectedSizes[item.productId], // 🆕 use selected size
-          })),
-          addressInfo: {
-            addressId: currentSelectedAddress?._id,
-            address: currentSelectedAddress?.address,
-            city: currentSelectedAddress?.city,
-            pincode: currentSelectedAddress?.pincode,
-            phone: currentSelectedAddress?.phone,
-            notes: currentSelectedAddress?.notes,
-          },
-          orderStatus: "pending",
-          paymentMethod: "razorpay",
-          paymentStatus: "pending",
-          totalAmount: totalCartAmount,
-          orderDate: new Date(),
-          orderUpdateDate: new Date(),
-        }
-      );
+  `${import.meta.env.VITE_API_URL}/api/shop/order/payment/create-order`,
+  {
+    userId: user?.id,
+    cartId: cartItems?._id,
+    cartItems: cartItems.items.map(item => ({
+      productId: item?.productId,
+      title: item?.title,
+      image: item?.image,
+      price: item?.salePrice > 0 ? item?.salePrice : item?.price,
+      quantity: item?.quantity,
+      size: item?.size, // 👈 include size
+    })),
+    addressInfo: {
+      addressId: currentSelectedAddress?._id,
+      address: currentSelectedAddress?.address,
+      city: currentSelectedAddress?.city,
+      pincode: currentSelectedAddress?.pincode,
+      phone: currentSelectedAddress?.phone,
+      notes: currentSelectedAddress?.notes,
+    },
+    orderStatus: "pending",
+    paymentMethod: "razorpay",
+    paymentStatus: "pending",
+    totalAmount: totalCartAmount,
+    orderDate: new Date(),
+    orderUpdateDate: new Date(),
+  }
+);
+
 
       const { id: razorpayOrderId, amount, currency } = data;
 
@@ -127,7 +107,6 @@ function ShoppingCheckout() {
                     price:
                       item?.salePrice > 0 ? item?.salePrice : item?.price,
                     quantity: item?.quantity,
-                    size: selectedSizes[item.productId], // 🆕 include size here too
                   })),
                   addressInfo: {
                     addressId: currentSelectedAddress?._id,
@@ -191,26 +170,7 @@ function ShoppingCheckout() {
         <div className="flex flex-col gap-4">
           {cartItems?.items?.length > 0 &&
             cartItems.items.map((item) => (
-              <div key={item.productId + (item.size || "")}>
-                <UserCartItemsContent cartItem={item} />
-                {/* 🆕 Size Selector */}
-                {item.availableSizes && item.availableSizes.length > 0 && (
-                  <select
-                    className="border rounded p-2 mt-2 w-full"
-                    value={selectedSizes[item.productId] || ""}
-                    onChange={(e) =>
-                      handleSizeChange(item.productId, e.target.value)
-                    }
-                  >
-                    <option value="">Select Size</option>
-                    {item.availableSizes.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
+              <UserCartItemsContent key={item.productId  + (item.size || "")} cartItem={item} />
             ))}
 
           <div className="mt-8 space-y-4">
