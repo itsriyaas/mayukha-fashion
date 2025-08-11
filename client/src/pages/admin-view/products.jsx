@@ -20,7 +20,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const initialFormData = {
-  image: null,
+  image: "",
   title: "",
   description: "",
   category: "",
@@ -29,7 +29,7 @@ const initialFormData = {
   salePrice: "",
   totalStock: "",
   averageReview: 0,
-  sizes: "", // Store as comma-separated string in form
+  sizes: "", // stored as comma-separated string in form
 };
 
 // Convert comma-separated string to array for backend
@@ -54,9 +54,11 @@ function AdminProducts() {
   function onSubmit(event) {
     event.preventDefault();
 
+    // Make sure sizes is sent as an array
     const cleanedFormData = {
       ...formData,
       sizes: normalizeSizes(formData.sizes),
+      image: uploadedImageUrl || formData.image, // ✅ ensure image is sent
     };
 
     if (currentEditedId !== null) {
@@ -69,22 +71,19 @@ function AdminProducts() {
         if (data?.payload?.success) {
           dispatch(fetchAllProducts());
           setFormData(initialFormData);
-          setOpenCreateProductsDialog(false);
+          setUploadedImageUrl("");
           setCurrentEditedId(null);
+          setOpenCreateProductsDialog(false);
           toast({ title: "Product updated successfully" });
         }
       });
     } else {
-      dispatch(
-        addNewProduct({
-          ...cleanedFormData,
-          image: uploadedImageUrl,
-        })
-      ).then((data) => {
+      dispatch(addNewProduct(cleanedFormData)).then((data) => {
         if (data?.payload?.success) {
           dispatch(fetchAllProducts());
           setOpenCreateProductsDialog(false);
           setImageFile(null);
+          setUploadedImageUrl("");
           setFormData(initialFormData);
           toast({ title: "Product added successfully" });
         }
@@ -102,9 +101,12 @@ function AdminProducts() {
   }
 
   function isFormValid() {
-    return Object.keys(formData)
-      .filter((currentKey) => currentKey !== "averageReview")
-      .every((key) => formData[key] && formData[key].toString().trim() !== "");
+    return (
+      uploadedImageUrl && // ✅ image must be uploaded
+      Object.keys(formData)
+        .filter((key) => key !== "averageReview" && key !== "image")
+        .every((key) => formData[key] && formData[key].toString().trim() !== "")
+    );
   }
 
   useEffect(() => {
@@ -146,10 +148,13 @@ function AdminProducts() {
 
       <Sheet
         open={openCreateProductsDialog}
-        onOpenChange={() => {
-          setOpenCreateProductsDialog(false);
-          setCurrentEditedId(null);
-          setFormData(initialFormData);
+        onOpenChange={(open) => {
+          if (!open) {
+            setOpenCreateProductsDialog(false);
+            setCurrentEditedId(null);
+            setFormData(initialFormData);
+            setUploadedImageUrl("");
+          }
         }}
       >
         <SheetContent side="right" className="overflow-auto">
