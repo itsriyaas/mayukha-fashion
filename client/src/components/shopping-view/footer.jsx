@@ -12,7 +12,7 @@ export default function Footer() {
             alt="Mahalekshmi Silks"
             className="w-40 mb-4"
           /> */}
-          <h4>Mayukha Fashion Store</h4>
+          <img src="/logo.png" alt="footer_logo" width={'200'} />
           <p className="text-gray-300 text-sm leading-relaxed">
             Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quos expedita fuga odit, accusamus magnam, nulla minima blanditiis beatae voluptates vel natus nisi at? Commodi, maxime. Exercitationem soluta quos sequi minus.
           </p>

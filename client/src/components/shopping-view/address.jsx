@@ -99,11 +99,13 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
     });
   }
 
-  function isFormValid() {
-    return Object.keys(formData)
-      .map((key) => formData[key].trim() !== "")
-      .every((item) => item);
-  }
+function isFormValid() {
+  return Object.keys(formData)
+    .filter((key) => key !== "notes") // Exclude notes from required check
+    .map((key) => formData[key].trim() !== "")
+    .every((item) => item);
+}
+
 
   useEffect(() => {
     dispatch(fetchAllAddresses(user?.id));
