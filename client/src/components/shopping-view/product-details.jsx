@@ -32,46 +32,48 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   }
 
   function handleAddToCart(getCurrentProductId, getTotalStock) {
-    if (!selectedSize) {
-      toast({
-        title: "Please select a size before adding to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let getCartItems = cartItems.items || [];
-
-    if (getCartItems.length) {
-      const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId && item.size === selectedSize
-      );
-      if (indexOfCurrentItem > -1) {
-        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-        if (getQuantity + 1 > getTotalStock) {
-          toast({
-            title: `Only ${getQuantity} quantity can be added for size ${selectedSize}`,
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-    }
-
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        size: selectedSize,
-        quantity: 1,
-      })
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        toast({ title: `Size ${selectedSize} added to cart` });
-      }
+  if (!selectedSize) {
+    toast({
+      title: "Please select a size before adding to cart",
+      variant: "destructive",
     });
+    return;
   }
+
+  let getCartItems = cartItems.items || [];
+
+  if (getCartItems.length) {
+    const indexOfCurrentItem = getCartItems.findIndex(
+      (item) => item.productId === getCurrentProductId && item.size === selectedSize
+    );
+    if (indexOfCurrentItem > -1) {
+      const getQuantity = getCartItems[indexOfCurrentItem].quantity;
+      if (getQuantity + 1 > getTotalStock) {
+        toast({
+          title: `Only ${getQuantity} quantity can be added for size ${selectedSize}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+  }
+
+  // ✅ Pass product name with size appended
+  dispatch(
+    addToCart({
+      userId: user?.id,
+      productId: getCurrentProductId,
+      size: selectedSize,
+      quantity: 1,
+      productName: `${productDetails?.title} - ${selectedSize}`, // Added
+    })
+  ).then((data) => {
+    if (data?.payload?.success) {
+      dispatch(fetchCartItems(user?.id));
+      toast({ title: `Size ${selectedSize} added to cart` });
+    }
+  });
+}
 
   function handleDialogClose() {
     setOpen(false);

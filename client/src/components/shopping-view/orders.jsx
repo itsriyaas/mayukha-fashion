@@ -50,7 +50,6 @@ function ShoppingOrders() {
               <TableHead>Order Date</TableHead>
               <TableHead>Order Status</TableHead>
               <TableHead>Order Price</TableHead>
-              <TableHead>Sizes</TableHead>
               <TableHead>
                 <span className="sr-only">Details</span>
               </TableHead>
@@ -77,23 +76,8 @@ function ShoppingOrders() {
                     </TableCell>
                     <TableCell>₹{orderItem?.totalAmount}</TableCell>
 
-                    {/* ✅ Show product sizes */}
-                    <TableCell>
-                      {orderItem?.items && orderItem.items.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {orderItem.items.map((product) => (
-                            <Badge
-                              key={`${orderItem._id}-${product._id}`}
-                              variant="outline"
-                            >
-                              {product.size || "N/A"}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">N/A</span>
-                      )}
-                    </TableCell>
+        
+                    
 
                     <TableCell>
                       <Dialog

@@ -39,9 +39,9 @@ function ShoppingProductTile({
             <span className="text-[16px] text-muted-foreground">
               {categoryOptionsMap[product?.category]}
             </span>
-            <span className="text-[16px] text-muted-foreground">
+           {/*  <span className="text-[16px] text-muted-foreground">
               {brandOptionsMap[product?.brand]}
-            </span>
+            </span> */}
           </div>
 
           <div className="flex justify-between items-center mb-2">
