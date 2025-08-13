@@ -3,7 +3,7 @@ const razorpay = require("../../helpers/razorpay");
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
-
+const mongoose = require("mongoose");
 const createOrder = async (req, res) => {
   try {
     const { totalAmount } = req.body;
@@ -28,7 +28,7 @@ const createOrder = async (req, res) => {
 };
 
 const capturePayment = async (req, res) => {
- try {
+  try {
     const { paymentId, orderId, signature, orderData } = req.body;
 
     // 1️⃣ Validate incoming data
@@ -62,6 +62,7 @@ const capturePayment = async (req, res) => {
       sizes: orderData.sizes || [],
       paymentId,
       razorpayOrderId: orderId,
+      paymentMethod: "razorpay",
       paymentStatus: "paid",
       orderStatus: "confirmed",
       orderDate: new Date(),
@@ -70,11 +71,11 @@ const capturePayment = async (req, res) => {
 
     await newOrder.save();
 
-    // 4️⃣ Respond with success
+    // 4️⃣ Respond with success including full order
     res.status(200).json({
       success: true,
       message: "Payment verified & order placed successfully",
-      orderId: newOrder._id,
+      order: newOrder, // full order object
     });
   } catch (error) {
     console.error("Payment capture error:", error);
@@ -84,6 +85,7 @@ const capturePayment = async (req, res) => {
     });
   }
 };
+
 
 const getAllOrdersByUser = async (req, res) => {
   try {
@@ -113,6 +115,15 @@ const getAllOrdersByUser = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validate ObjectId before querying
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Order ID format!",
+      });
+    }
+
     const order = await Order.findById(id);
 
     if (!order) {
@@ -126,8 +137,8 @@ const getOrderDetails = async (req, res) => {
       success: true,
       data: order,
     });
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error("Error fetching order details:", error);
     res.status(500).json({
       success: false,
       message: "Some error occurred!",

@@ -61,7 +61,7 @@ function ShoppingCheckout() {
     const missingSize = items.some((item) => !item.size || (Array.isArray(item.size) && item.size.length === 0));
     if (missingSize) {
       return toast({
-        title: "Some products are missing size. Please contact support.",
+        title: "Some products are missing size. Please Refresh the page or contact support.",
         variant: "destructive",
       });
     }
@@ -140,10 +140,12 @@ function ShoppingCheckout() {
               }
             );
 
-            if (verifyRes.data.success) {
-              toast({ title: "Payment successful! Order placed." });
-              window.location.href = "/shop/payment-success";
-            } else {
+          if (verifyRes.data.success) {
+  const orderId = verifyRes.data.order?._id;
+  toast({ title: "Payment successful! Order placed." });
+  window.location.href = `/shop/payment-success/${orderId}`;
+}
+ else {
               toast({
                 title: "Payment verification failed. Please contact support.",
                 variant: "destructive",

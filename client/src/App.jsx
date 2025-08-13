@@ -87,7 +87,7 @@ function App() {
           <Route path="checkout" element={<ShoppingCheckout />} />
           <Route path="account" element={<ShoppingAccount />} />
           <Route path="razorpay-return" element={<RazorpayReturnPage />} />
-          <Route path="payment-success" element={<PaymentSuccessPage />} />
+          <Route path="payment-success/:id" element={<PaymentSuccessPage />} />
           <Route path="search" element={<SearchProducts />} />
         </Route>
         <Route path="/unauth-page" element={<UnauthPage />} />
