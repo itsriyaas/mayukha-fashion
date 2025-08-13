@@ -29,50 +29,53 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
   const { toast } = useToast();
 
   function handleManageAddress(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (addressList.length >= 3 && currentEditedId === null) {
-      setFormData(initialAddressFormData);
-      toast({
-        title: "You can add max 3 addresses",
-        variant: "destructive",
-      });
-
-      return;
-    }
-
-    currentEditedId !== null
-      ? dispatch(
-          editaAddress({
-            userId: user?.id,
-            addressId: currentEditedId,
-            formData,
-          })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllAddresses(user?.id));
-            setCurrentEditedId(null);
-            setFormData(initialAddressFormData);
-            toast({
-              title: "Address updated successfully",
-            });
-          }
-        })
-      : dispatch(
-          addNewAddress({
-            ...formData,
-            userId: user?.id,
-          })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllAddresses(user?.id));
-            setFormData(initialAddressFormData);
-            toast({
-              title: "Address added successfully",
-            });
-          }
-        });
+  if (addressList.length >= 3 && currentEditedId === null) {
+    setFormData(initialAddressFormData);
+    toast({
+      title: "You can add max 3 addresses",
+      variant: "destructive",
+    });
+    return;
   }
+
+  // Ensure notes is "N/A" if empty
+  const updatedFormData = {
+    ...formData,
+    notes: formData.notes?.trim() ? formData.notes.trim() : "N/A",
+  };
+
+  if (currentEditedId !== null) {
+    dispatch(
+      editaAddress({
+        userId: user?.id,
+        addressId: currentEditedId,
+        formData: updatedFormData,
+      })
+    ).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchAllAddresses(user?.id));
+        setCurrentEditedId(null);
+        setFormData(initialAddressFormData);
+        toast({ title: "Address updated successfully" });
+      }
+    });
+  } else {
+    dispatch(
+      addNewAddress({
+        ...updatedFormData,
+        userId: user?.id,
+      })
+    ).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchAllAddresses(user?.id));
+        setFormData(initialAddressFormData);
+        toast({ title: "Address added successfully" });
+      }
+    });
+  }
+}
 
   function handleDeleteAddress(getCurrentAddress) {
     dispatch(
