@@ -4,7 +4,7 @@ import { loginFormControls } from "@/config";
 import { loginUser } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const initialState = {
   email: "",
@@ -14,7 +14,6 @@ const initialState = {
 function AuthLogin() {
   const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   function onSubmit(event) {
@@ -22,19 +21,12 @@ function AuthLogin() {
 
     dispatch(loginUser(formData)).then((data) => {
       if (data?.payload?.success) {
-        // ✅ Save token in localStorage
-        if (data?.payload?.token) {
-          localStorage.setItem("authToken", data.payload.token);
-        }
         toast({
-          title: data?.payload?.message || "Login successful!",
+          title: data?.payload?.message,
         });
-
-        // ✅ Redirect to dashboard/shop page
-        navigate("/shop/account");
       } else {
         toast({
-          title: data?.payload?.message || "Login failed!",
+          title: data?.payload?.message,
           variant: "destructive",
         });
       }
@@ -45,8 +37,8 @@ function AuthLogin() {
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="text-center">
         <div className="flex justify-center">
-          <img src="/logo.png" alt="logo" width={"200"} />
-        </div>
+          <img src="/logo.png" alt="logo" width={'200'}/>
+          </div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Sign in to your account
         </h1>
