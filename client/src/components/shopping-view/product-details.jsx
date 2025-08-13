@@ -1,8 +1,7 @@
-import { StarIcon, Heart, CopyPlus } from "lucide-react";
+import { StarIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
-import { Separator } from "../ui/separator";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,72 +17,72 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
   const [selectedImage, setSelectedImage] = useState(productDetails?.image);
-  const [selectedSize, setSelectedSize] = useState(""); // single size selection
+  const [selectedSize, setSelectedSize] = useState("");
 
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { reviews } = useSelector((state) => state.shopReview);
-
   const { toast } = useToast();
 
-  function handleRatingChange(getRating) {
-    setRating(getRating);
-  }
+  const handleRatingChange = (val) => setRating(val);
 
-  function handleAddToCart(getCurrentProductId, getTotalStock) {
+ // Handle Add to Cart
+const handleAddToCart = () => {
   if (!selectedSize) {
     toast({
-      title: "Please select a size before adding to cart",
+      title: "Please select a size",
       variant: "destructive",
     });
     return;
   }
 
-  let getCartItems = cartItems.items || [];
+  const cartList = cartItems.items || [];
+  const existingItem = cartList.find(
+    (item) =>
+      item.productId === productDetails?._id &&
+      item.size === selectedSize
+  );
 
-  if (getCartItems.length) {
-    const indexOfCurrentItem = getCartItems.findIndex(
-      (item) => item.productId === getCurrentProductId && item.size === selectedSize
-    );
-    if (indexOfCurrentItem > -1) {
-      const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-      if (getQuantity + 1 > getTotalStock) {
-        toast({
-          title: `Only ${getQuantity} quantity can be added for size ${selectedSize}`,
-          variant: "destructive",
-        });
-        return;
-      }
-    }
+  if (
+    existingItem &&
+    existingItem.quantity + 1 > productDetails?.totalStock
+  ) {
+    toast({
+      title: `Only ${productDetails?.totalStock} items available for size ${selectedSize}`,
+      variant: "destructive",
+    });
+    return;
   }
 
-  // ✅ Pass product name with size appended
   dispatch(
     addToCart({
       userId: user?.id,
-      productId: getCurrentProductId,
+      productId: productDetails?._id,
       size: selectedSize,
       quantity: 1,
-      productName: `${productDetails?.title} - ${selectedSize}`, // Added
+      productName: `${productDetails?.title} - ${selectedSize}`, // optional
     })
-  ).then((data) => {
-    if (data?.payload?.success) {
+  ).then((res) => {
+    if (res?.payload?.success) {
       dispatch(fetchCartItems(user?.id));
-      toast({ title: `Size ${selectedSize} added to cart` });
+      toast({
+        title: `Added size ${selectedSize} to cart`,
+      });
     }
   });
-}
+};
 
-  function handleDialogClose() {
+
+  const handleDialogClose = () => {
     setOpen(false);
     dispatch(setProductDetails());
     setRating(0);
     setReviewMsg("");
     setSelectedSize("");
-  }
+  };
 
-  function handleAddReview() {
+  const handleAddReview = () => {
     dispatch(
       addReview({
         productId: productDetails?._id,
@@ -92,43 +91,43 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         reviewMessage: reviewMsg,
         reviewValue: rating,
       })
-    ).then((data) => {
-      if (data.payload.success) {
+    ).then((res) => {
+      if (res.payload.success) {
         setRating(0);
         setReviewMsg("");
         dispatch(getReviews(productDetails?._id));
-        toast({ title: "Review added successfully!" });
+        toast({ title: "Review added successfully" });
       }
     });
-  }
+  };
 
   useEffect(() => {
-    if (productDetails !== null) {
+    if (productDetails) {
       setSelectedImage(productDetails?.image);
       dispatch(getReviews(productDetails?._id));
     }
   }, [productDetails]);
 
-  const averageReview =
-    reviews && reviews.length > 0
-      ? reviews.reduce((sum, reviewItem) => sum + reviewItem.reviewValue, 0) /
-        reviews.length
+  const avgReview =
+    reviews?.length > 0
+      ? reviews.reduce((sum, r) => sum + r.reviewValue, 0) / reviews.length
       : 0;
 
   const images = productDetails?.images?.length
     ? productDetails.images
     : [productDetails?.image];
 
-  // Split sizes by comma if they are stored as a single string
- const sizes = Array.isArray(productDetails?.sizes)
-    ? productDetails.sizes.flatMap(s => s.split(",").map(size => size.trim()))
+  const sizes = Array.isArray(productDetails?.sizes)
+    ? productDetails.sizes.flatMap((s) =>
+        s.split(",").map((size) => size.trim())
+      )
     : [];
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:p-6 md:p-8 w-full sm:max-w-[95vw] lg:max-w-[80vw]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* LEFT SIDE */}
+          {/* LEFT - Images */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto">
               {images.map((img, idx) => (
@@ -136,8 +135,10 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                   key={idx}
                   src={img}
                   alt="thumbnail"
-                  className={`w-20 h-20 object-cover rounded cursor-pointer border flex-shrink-0 ${
-                    selectedImage === img ? "border-primary" : "border-gray-200"
+                  className={`w-20 h-20 object-cover rounded cursor-pointer border ${
+                    selectedImage === img
+                      ? "border-primary"
+                      : "border-gray-200"
                   }`}
                   onClick={() => setSelectedImage(img)}
                 />
@@ -152,16 +153,16 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT - Details */}
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold">
               {productDetails?.title}
             </h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className="text-gray-500">
-                Brands : <span className="font-semibold">Mayukha Fashion</span>
+                Brand: <span className="font-semibold">Mayukha Fashion</span>
               </span>
-              <StarRatingComponent rating={averageReview} />
+              <StarRatingComponent rating={avgReview} />
               <span>({reviews?.length || 0} Reviews)</span>
             </div>
 
@@ -178,71 +179,61 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                   : productDetails?.price}
               </span>
               <span className="text-green-600 text-sm">
-                Available in Stock: {productDetails?.totalStock} Items
+                Stock: {productDetails?.totalStock}
               </span>
             </div>
 
             <p className="text-muted-foreground mt-3">
               {productDetails?.description}
             </p>
-            <p className="mt-2 font-medium">
-              Free Shipping (Est. Delivery Time 2-3 Days)
-            </p>
 
-            {/* SINGLE SIZE SELECTION */}
-{sizes.length > 0 && (
-  <div className="mt-4">
-    <Label>Select Size</Label>
-    <div className="flex flex-wrap gap-3 mt-2">
-      {sizes.map((size, idx) => (
-        <label
-          key={idx}
-          className={`cursor-pointer px-4 py-2 border rounded flex items-center justify-center
-            ${selectedSize === size
-              ? "bg-red-500 text-white border-red-500"
-              : "bg-white text-black border-gray-300"
-            }`}
-        >
-          <input
-            type="radio"
-            name="product-size"
-            value={size}
-            checked={selectedSize === size}
-            onChange={() => setSelectedSize(size)}
-            className="hidden"
-          />
-          {size}
-        </label>
-      ))}
-    </div>
-  </div>
-)}
+            {/* Size Selector */}
+            {sizes.length > 0 && (
+              <div className="mt-4">
+                <Label>Select Size</Label>
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {sizes.map((size, idx) => (
+                    <label
+                      key={idx}
+                      className={`cursor-pointer px-4 py-2 border rounded ${
+                        selectedSize === size
+                          ? "bg-red-500 text-white border-red-500"
+                          : "bg-white text-black border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="product-size"
+                        value={size}
+                        checked={selectedSize === size}
+                        onChange={() => setSelectedSize(size)}
+                        className="hidden"
+                      />
+                      {size}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Add to Cart */}
+            <div className="flex gap-3 mt-4">
+  {productDetails?.totalStock === 0 ? (
+    <Button disabled>Out of Stock</Button>
+  ) : (
+    <Button
+      className="bg-red-500 hover:bg-red-600"
+      onClick={handleAddToCart}
+    >
+      Add to Cart
+    </Button>
+  )}
+</div>
 
 
-            {/* ADD TO CART */}
-            <div className="flex flex-wrap items-center gap-3 mt-4">
-              {productDetails?.totalStock === 0 ? (
-                <Button className="opacity-60 cursor-not-allowed">
-                  Out of Stock
-                </Button>
-              ) : (
-                <Button
-                  className="bg-red-500 hover:bg-red-600"
-                  onClick={() =>
-                    handleAddToCart(
-                      productDetails?._id,
-                      productDetails?.totalStock
-                    )
-                  }
-                >
-                  Add to Cart
-                </Button>
-              )}
-            </div>
-
-            {/* TABS */}
+            {/* Tabs */}
             <Tabs defaultValue="description" className="mt-6">
-              <TabsList className="flex-wrap">
+              <TabsList>
                 <TabsTrigger value="description">Description</TabsTrigger>
                 <TabsTrigger value="reviews">
                   Reviews ({reviews?.length || 0})
@@ -254,22 +245,21 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 </p>
               </TabsContent>
               <TabsContent value="reviews">
+                {/* Review list */}
                 <div className="max-h-[250px] overflow-auto p-4">
-                  {reviews && reviews.length > 0 ? (
-                    reviews.map((reviewItem, idx) => (
+                  {reviews?.length > 0 ? (
+                    reviews.map((r, idx) => (
                       <div key={idx} className="flex gap-4 mb-4">
                         <Avatar className="w-10 h-10 border">
                           <AvatarFallback>
-                            {reviewItem?.userName[0].toUpperCase()}
+                            {r?.userName[0].toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-bold">{reviewItem?.userName}</h3>
-                          <StarRatingComponent
-                            rating={reviewItem?.reviewValue}
-                          />
+                          <h3 className="font-bold">{r?.userName}</h3>
+                          <StarRatingComponent rating={r?.reviewValue} />
                           <p className="text-muted-foreground">
-                            {reviewItem.reviewMessage}
+                            {r.reviewMessage}
                           </p>
                         </div>
                       </div>
@@ -279,23 +269,22 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                   )}
                 </div>
 
+                {/* Review form */}
                 <div className="mt-6 flex flex-col gap-2">
                   <Label>Write a review</Label>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <StarRatingComponent
                       rating={rating}
                       handleRatingChange={handleRatingChange}
                     />
                     <Input
-                      name="reviewMsg"
                       value={reviewMsg}
                       onChange={(e) => setReviewMsg(e.target.value)}
                       placeholder="Write a review..."
-                      className="flex-1"
                     />
                     <Button
                       onClick={handleAddReview}
-                      disabled={reviewMsg.trim() === ""}
+                      disabled={!reviewMsg.trim()}
                     >
                       Submit
                     </Button>

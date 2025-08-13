@@ -8,30 +8,41 @@ const initialState = {
 
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ userId, productId, quantity }) => {
+  async ({ userId, productId, quantity, size }) => {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/shop/cart/add`,
-      {
-        userId,
-        productId,
-        quantity,
-      }
+      { userId, productId, quantity, size }
     );
-
     return response.data;
   }
 );
+
+
 
 export const fetchCartItems = createAsyncThunk(
   "cart/fetchCartItems",
-  async (userId) => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/shop/cart/get/${userId}`
-    );
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/shop/cart/get/${userId}`
+      );
 
-    return response.data;
+      const items = Array.isArray(response.data?.items)
+        ? response.data.items.map((item) => ({
+            ...item,
+            size: item.size || null, // ✅ preserve size
+          }))
+        : [];
+
+      return { ...response.data, items };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch cart items"
+      );
+    }
   }
 );
+
 
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
@@ -46,19 +57,21 @@ export const deleteCartItem = createAsyncThunk(
 
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ userId, productId, quantity }) => {
+  async ({ userId, productId, quantity, size }) => {
     const response = await axios.put(
       `${import.meta.env.VITE_API_URL}/api/shop/cart/update-cart`,
       {
         userId,
         productId,
         quantity,
+        size, // include size in payload
       }
     );
 
     return response.data;
   }
 );
+
 
 const shoppingCartSlice = createSlice({
   name: "shoppingCart",

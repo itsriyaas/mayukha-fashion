@@ -1,28 +1,34 @@
-import Address from "@/components/shopping-view/address";
-import img from "../../assets/account.jpg";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import img from "../../assets/account.jpg";
+
+import Address from "@/components/shopping-view/address";
 import UserCartItemsContent from "@/components/shopping-view/cart-items-content";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import axios from "axios";
 
 function ShoppingCheckout() {
-  const { cartItems } = useSelector((state) => state.shopCart);
-  const { user } = useSelector((state) => state.auth);
-  const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  const { cartItems } = useSelector((state) => state.shopCart);
+  const { user } = useSelector((state) => state.auth);
+
+  const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
+
+  // Always have a safe fallback
+  const items = Array.isArray(cartItems?.items) ? cartItems.items : [];
+
+  // Calculate total amount
   const totalCartAmount =
-    cartItems?.items?.reduce(
+    items.reduce(
       (sum, item) =>
-        sum +
-        (item?.salePrice > 0 ? item?.salePrice : item?.price) * item?.quantity,
+        sum + (item?.salePrice > 0 ? item.salePrice : item.price) * item.quantity,
       0
     ) || 0;
 
-  // Load Razorpay script dynamically
+  // Load Razorpay script once
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -30,10 +36,16 @@ function ShoppingCheckout() {
     document.body.appendChild(script);
   }, []);
 
-  async function handleInitiateRazorpayPayment() {
-    if (!cartItems?.items?.length) {
+  const formatSize = (size) => {
+    if (Array.isArray(size)) return size.join(", ");
+    return size || "Not specified";
+  };
+
+  // Handle payment initiation
+  const handleInitiateRazorpayPayment = async () => {
+    if (!items.length) {
       return toast({
-        title: "Your cart is empty. Please add items to proceed",
+        title: "Your cart is empty. Please add items to proceed.",
         variant: "destructive",
       });
     }
@@ -45,38 +57,46 @@ function ShoppingCheckout() {
       });
     }
 
-    try {
-      // Step 1: Create order from backend
-      const { data } = await axios.post(
-  `${import.meta.env.VITE_API_URL}/api/shop/order/payment/create-order`,
-  {
-    userId: user?.id,
-    cartId: cartItems?._id,
-    cartItems: cartItems.items.map(item => ({
-      productId: item?.productId,
-      title: item?.title,
-      image: item?.image,
-      price: item?.salePrice > 0 ? item?.salePrice : item?.price,
-      quantity: item?.quantity,
-      size: item?.size, // 👈 include size
-    })),
-    addressInfo: {
-      addressId: currentSelectedAddress?._id,
-      address: currentSelectedAddress?.address,
-      city: currentSelectedAddress?.city,
-      pincode: currentSelectedAddress?.pincode,
-      phone: currentSelectedAddress?.phone,
-      notes: currentSelectedAddress?.notes,
-    },
-    orderStatus: "pending",
-    paymentMethod: "razorpay",
-    paymentStatus: "pending",
-    totalAmount: totalCartAmount,
-    orderDate: new Date(),
-    orderUpdateDate: new Date(),
-  }
-);
+    // Check for missing size
+    const missingSize = items.some((item) => !item.size || (Array.isArray(item.size) && item.size.length === 0));
+    if (missingSize) {
+      return toast({
+        title: "Some products are missing size. Please contact support.",
+        variant: "destructive",
+      });
+    }
 
+    try {
+      // Step 1: Create Razorpay order in backend
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/shop/order/payment/create-order`,
+        {
+          userId: user?.id,
+          cartId: cartItems?._id,
+          cartItems: items.map((item) => ({
+            productId: typeof item.productId === "object" ? item.productId._id : String(item.productId),
+            title: item?.title || item?.productId?.title,
+            image: item?.image || item?.productId?.image,
+            price: item?.salePrice > 0 ? item.salePrice : item.price,
+            quantity: item.quantity,
+            size: item.size,
+          })),
+          addressInfo: {
+            addressId: currentSelectedAddress?._id,
+            address: currentSelectedAddress?.address,
+            city: currentSelectedAddress?.city,
+            pincode: currentSelectedAddress?.pincode,
+            phone: currentSelectedAddress?.phone,
+            notes: currentSelectedAddress?.notes,
+          },
+          orderStatus: "pending",
+          paymentMethod: "razorpay",
+          paymentStatus: "pending",
+          totalAmount: totalCartAmount,
+          orderDate: new Date(),
+          orderUpdateDate: new Date(),
+        }
+      );
 
       const { id: razorpayOrderId, amount, currency } = data;
 
@@ -88,9 +108,8 @@ function ShoppingCheckout() {
         name: "Mayukha Fashion Store",
         description: "Order Payment",
         order_id: razorpayOrderId,
-        handler: async function (response) {
+        handler: async (response) => {
           try {
-            // Step 3: Send payment details to backend for verification & order creation
             const verifyRes = await axios.post(
               `${import.meta.env.VITE_API_URL}/api/shop/order/payment/capture`,
               {
@@ -100,13 +119,13 @@ function ShoppingCheckout() {
                 orderData: {
                   userId: user?.id,
                   cartId: cartItems?._id,
-                  cartItems: cartItems.items.map((item) => ({
-                    productId: item?.productId,
-                    title: item?.title,
-                    image: item?.image,
-                    price:
-                      item?.salePrice > 0 ? item?.salePrice : item?.price,
-                    quantity: item?.quantity,
+                  cartItems: items.map((item) => ({
+                    productId: typeof item.productId === "object" ? item.productId._id : String(item.productId),
+                    title: item?.title || item?.productId?.title,
+                    image: item?.image || item?.productId?.image,
+                    price: item?.salePrice > 0 ? item.salePrice : item.price,
+                    quantity: item.quantity,
+                    size: item.size,
                   })),
                   addressInfo: {
                     addressId: currentSelectedAddress?._id,
@@ -146,8 +165,7 @@ function ShoppingCheckout() {
         theme: { color: "#3399cc" },
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      new window.Razorpay(options).open();
     } catch (error) {
       console.error(error);
       toast({
@@ -155,24 +173,38 @@ function ShoppingCheckout() {
         variant: "destructive",
       });
     }
-  }
+  };
 
   return (
     <div className="flex flex-col">
+      {/* Banner */}
       <div className="relative h-[300px] w-full overflow-hidden">
-        <img src={img} className="h-full w-full object-cover object-center" />
+        <img src={img} className="h-full w-full object-cover object-center" alt="Checkout Banner" />
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5 p-5">
+        {/* Address Section */}
         <Address
           selectedId={currentSelectedAddress}
           setCurrentSelectedAddress={setCurrentSelectedAddress}
         />
-        <div className="flex flex-col gap-4">
-          {cartItems?.items?.length > 0 &&
-            cartItems.items.map((item) => (
-              <UserCartItemsContent key={item.productId  + (item.size || "")} cartItem={item} />
-            ))}
 
+        {/* Cart Section */}
+        <div className="flex flex-col gap-4">
+          {items.length > 0 &&
+            items.map((item) => {
+              const id = typeof item.productId === "object" ? item.productId._id : String(item.productId);
+              return (
+                <div key={`${id}-${formatSize(item.size)}`}>
+                  <UserCartItemsContent cartItem={item} />
+                  <p className="text-sm text-gray-600 mt-1">
+                    <strong>Size:</strong> {formatSize(item.size)}
+                  </p>
+                </div>
+              );
+            })}
+
+          {/* Cart Summary */}
           <div className="mt-8 space-y-4">
             <div className="flex justify-between">
               <span className="font-bold">Total</span>
@@ -180,6 +212,7 @@ function ShoppingCheckout() {
             </div>
           </div>
 
+          {/* Checkout Button */}
           <div className="mt-4 w-full">
             <Button onClick={handleInitiateRazorpayPayment} className="w-full">
               Pay with Razorpay
