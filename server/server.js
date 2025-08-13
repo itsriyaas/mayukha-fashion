@@ -40,11 +40,11 @@ app.use(
       "Cache-Control",
       "Expires",
       "Pragma",
+      "Accept",
     ],
     credentials: true,
   })
 );
-
 
 app.use(cookieParser());
 app.use(express.json());

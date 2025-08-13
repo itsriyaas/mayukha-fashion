@@ -41,21 +41,14 @@ const loginUser = async (req, res) => {
 
   try {
     const checkUser = await User.findOne({ email });
-    if (!checkUser)
-      return res.json({
-        success: false,
-        message: "User doesn't exists! Please register first",
-      });
+    if (!checkUser) {
+      return res.json({ success: false, message: "User doesn't exist! Please register first" });
+    }
 
-    const checkPasswordMatch = await bcrypt.compare(
-      password,
-      checkUser.password
-    );
-    if (!checkPasswordMatch)
-      return res.json({
-        success: false,
-        message: "Incorrect password! Please try again",
-      });
+    const checkPasswordMatch = await bcrypt.compare(password, checkUser.password);
+    if (!checkPasswordMatch) {
+      return res.json({ success: false, message: "Incorrect password! Please try again" });
+    }
 
     const token = jwt.sign(
       {
@@ -65,27 +58,32 @@ const loginUser = async (req, res) => {
         userName: checkUser.userName,
       },
       "CLIENT_SECRET_KEY",
-      { expiresIn: "60m" }
+      { expiresIn: "7d" }
     );
 
-    res.cookie("token", token, { httpOnly: true, secure: false }).json({
-      success: true,
-      message: "Logged in successfully",
-      user: {
-        email: checkUser.email,
-        role: checkUser.role,
-        id: checkUser._id,
-        userName: checkUser.userName,
-      },
-    });
+   res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,       // must be true for HTTPS
+  sameSite: "none",   // required for cross-origin cookies
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
+}).json({
+  success: true,
+  message: "Logged in successfully",
+  user: {
+    email: checkUser.email,
+    role: checkUser.role,
+    id: checkUser._id,
+    userName: checkUser.userName,
+  },
+});
+
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      success: false,
-      message: "Some error occured",
-    });
+    console.error(e);
+    res.status(500).json({ success: false, message: "Some error occurred" });
   }
 };
+
 
 //logout
 
