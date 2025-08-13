@@ -40,6 +40,7 @@ app.use(
       "Cache-Control",
       "Expires",
       "Pragma",
+      "Accept",
     ],
     credentials: true,
   })

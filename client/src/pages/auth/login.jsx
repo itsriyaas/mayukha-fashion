@@ -26,7 +26,6 @@ function AuthLogin() {
         if (data?.payload?.token) {
           localStorage.setItem("authToken", data.payload.token);
         }
-
         toast({
           title: data?.payload?.message || "Login successful!",
         });
