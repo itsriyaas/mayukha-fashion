@@ -1,4 +1,5 @@
 import { FaYoutube, FaFacebookF, FaPinterestP, FaInstagram } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -7,11 +8,6 @@ export default function Footer() {
         
         {/* Logo & Description */}
         <div className="sm:col-span-2">
-          {/* <img
-            src="/logo.png"
-            alt="Mahalekshmi Silks"
-            className="w-40 mb-4"
-          /> */}
           <img src="/logo.png" alt="footer_logo" width={'200'} />
           <p className="text-gray-300 text-sm leading-relaxed">
             Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quos expedita fuga odit, accusamus magnam, nulla minima blanditiis beatae voluptates vel natus nisi at? Commodi, maxime. Exercitationem soluta quos sequi minus.
@@ -44,7 +40,7 @@ export default function Footer() {
           <h4 className="font-semibold mb-3">Customer Care</h4>
           <ul className="space-y-2 text-gray-300 text-sm">
             <li>Help Center</li>
-            <li>Track Your Order</li>
+            <Link to={"/shop/account"}><li>Track Your Order</li></Link>
           </ul>
         </div>
 
@@ -52,8 +48,8 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold mb-3">Contact Us</h4>
           <p className="text-gray-300 text-sm">
-            Muthoor Showroom <br />
-            SH 1, Muthoor, Thiruvalla, Kerala 689107
+            Mayukha Fashion Store<br />
+           Thekke nada, Prumbillissery, Cherpu, Thrissur 680561
           </p>
           <p className="text-gray-300 text-sm mt-2">
             Email: <a href="mailto:support@mahalekshmisilks.com" className="underline">support@mayukhafashionstore.com</a>
@@ -71,7 +67,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-700 mt-8 pt-4 text-center text-gray-400 text-sm">
-        © 2025 Mayukha Fashion. All Rights Reserved. Developed by <a href="" target="_blank" className="hover:text-blue-500">Thea IT Solutions</a>.
+        © 2025 Mayukha Fashion. All Rights Reserved. Developed by <a href="https://theaitsolutions.net/" target="_blank" className="hover:text-blue-500">Thea IT Solutions</a>.
       </div>
     </footer>
   );

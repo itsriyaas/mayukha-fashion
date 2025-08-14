@@ -101,20 +101,24 @@ function AdminProducts() {
   }
 
 function isFormValid() {
-  const hasImage = uploadedImageUrl || formData.image; // ✅ allow new or existing image
+  const hasImage = uploadedImageUrl || formData.image;
 
-  // ❌ Prevent submit while image is uploading
   if (imageLoadingState) return false;
 
   return (
     hasImage &&
     Object.keys(formData)
-      .filter((key) => key !== "averageReview" && key !== "image")
-      .every(
-        (key) => formData[key] && formData[key].toString().trim() !== ""
-      )
+      .filter(key => key !== "averageReview" && key !== "image")
+      .every(key => {
+        if (currentEditedId !== null) {
+          // Edit mode: allow empty fields
+          return true;
+        }
+        return formData[key] && formData[key].toString().trim() !== "";
+      })
   );
 }
+
 
 
   useEffect(() => {
@@ -136,9 +140,17 @@ function isFormValid() {
   return (
     <Fragment>
       <div className="mb-5 w-full flex justify-end">
-        <Button onClick={() => setOpenCreateProductsDialog(true)}>
-          Add New Product
-        </Button>
+        <Button
+  onClick={() => {
+    setFormData(initialFormData); // ✅ clear form
+    setUploadedImageUrl("");      // ✅ clear image
+    setImageFile(null);           // ✅ clear file
+    setCurrentEditedId(null);     // ✅ ensure it's add mode
+    setOpenCreateProductsDialog(true);
+  }}
+>
+  Add New Product
+</Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -158,11 +170,12 @@ function isFormValid() {
         open={openCreateProductsDialog}
         onOpenChange={(open) => {
           if (!open) {
-            setOpenCreateProductsDialog(false);
-            setCurrentEditedId(null);
-            setFormData(initialFormData);
-            setUploadedImageUrl("");
-          }
+  setOpenCreateProductsDialog(false);
+  setCurrentEditedId(null);
+  setFormData(initialFormData);
+  if (currentEditedId === null) setUploadedImageUrl("");
+}
+
         }}
       >
         <SheetContent side="right" className="overflow-auto">

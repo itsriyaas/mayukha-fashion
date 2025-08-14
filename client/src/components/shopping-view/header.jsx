@@ -139,7 +139,7 @@ function ShoppingHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/shop/home" className="flex items-center gap-2">
-          <img src="/logo.png" alt="logo" width={'180'}/>
+          <img src="/logo.png" alt="logo" width={'150'}/>
         </Link>
         <Sheet>
           <SheetTrigger asChild>
