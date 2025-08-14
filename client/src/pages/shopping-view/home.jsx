@@ -32,7 +32,7 @@ import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import { getFeatureImages } from "@/store/common-slice";
 
 const categoriesWithIcon = [
-  { id: "newarrival", label: "New Arrivals", image: "https://images.ctfassets.net/mivicpf5zews/11XOFRB2DxAFOJDBatyPPA/088f3852e2543b1d3815894d6e5ec5a4/MALLS-IN-COPENHAGEN_1200x600px_05.jpg?q=75" },
+  { id: "dhoti", label: "Mens Dhotis", image: "https://image3.mouthshut.com/images/imagesp/925754482s.jpg" },
   { id: "women", label: "Women", image: "https://b0bcebf4-d767-420b-9f5a-cccfc5015c46.selstorage.ru/iblock/49b/bu6511f8k62f684xggbodhupqfcq1l80.jpg" },
   { id: "offer", label: "Offer Products", image: "https://static.vecteezy.com/system/resources/previews/000/327/053/large_2x/big-sale-template-banner-vector-background.jpg" },
   { id: "kurthies", label: "Kurthies", image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi7HDVEZqNPH3M1Hn-YuROUGIgOBUsYEMKbzZb36MRfg0Iw3LRPjfqO95F_67g9_PG6Sdpps9JkDgpK-gGCRhRntPz57Ypp1knkgCjmc0H4jHnyzFlrEqPy5DPNSRwjsm6SjftveIO8s5Y/s1600/salwaar1.jpg" },

@@ -61,6 +61,7 @@ export const addProductFormElements = [
       { id: "women", label: "Women" },
       { id: "sarees", label: "Sarees" },
       { id: "kurthies", label: "Kurthies" },
+      { id: "dhoti", label: "Mens Dhoti"},
       { id: "offer", label: "OfferProducts" },
     ],
   },
@@ -129,8 +130,13 @@ export const shoppingViewHeaderMenuItems = [
     path: "/shop/listing",
   },
   {
-    id: "Sarees",
+    id: "sarees",
     label: "SAREES",
+    path: "/shop/listing",
+  },
+   {
+    id: "dhoti",
+    label: "MENS DHOTI",
     path: "/shop/listing",
   },
   {
@@ -149,6 +155,7 @@ export const categoryOptionsMap = {
   women: "Women",
   sarees: "Sarees",
   kurthies: "Kurthies",
+  dhoti: "Mens Dhoti",
   offer: "Offer Products",
 };
 
@@ -166,6 +173,7 @@ export const filterOptions = {
     { id: "women", label: "Women" },
     { id: "sarees", label: "Sarees" },
     { id: "kurthies", label: "Kurthies" },
+    { id: "dhoti", label:"Mens Dhoti"},
     { id: "offer", label: "Offer Products" },
   ],
   brand: [

@@ -12,6 +12,7 @@ import StarRatingComponent from "../common/star-rating";
 import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { useNavigate } from "react-router-dom";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
@@ -26,52 +27,62 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const { toast } = useToast();
 
   const handleRatingChange = (val) => setRating(val);
-
+  const navigate = useNavigate(); // ⬅️ Hook for navigation
  // Handle Add to Cart
-const handleAddToCart = () => {
-  if (!selectedSize) {
-    toast({
-      title: "Please select a size",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  const cartList = cartItems.items || [];
-  const existingItem = cartList.find(
-    (item) =>
-      item.productId === productDetails?._id &&
-      item.size === selectedSize
-  );
-
-  if (
-    existingItem &&
-    existingItem.quantity + 1 > productDetails?.totalStock
-  ) {
-    toast({
-      title: `Only ${productDetails?.totalStock} items available for size ${selectedSize}`,
-      variant: "destructive",
-    });
-    return;
-  }
-
-  dispatch(
-    addToCart({
-      userId: user?.id,
-      productId: productDetails?._id,
-      size: selectedSize,
-      quantity: 1,
-      productName: `${productDetails?.title} - ${selectedSize}`, // optional
-    })
-  ).then((res) => {
-    if (res?.payload?.success) {
-      dispatch(fetchCartItems(user?.id));
+ const handleAddToCart = () => {
+    // 🔹 Check if user is logged in
+    if (!user) {
       toast({
-        title: `Added size ${selectedSize} to cart`,
+        title: "Please login to add items to your cart",
+        variant: "destructive",
       });
+      navigate("/auth/login");
+      return;
     }
-  });
-};
+
+    if (!selectedSize) {
+      toast({
+        title: "Please select a size",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const cartList = cartItems.items || [];
+    const existingItem = cartList.find(
+      (item) =>
+        item.productId === productDetails?._id &&
+        item.size === selectedSize
+    );
+
+    if (
+      existingItem &&
+      existingItem.quantity + 1 > productDetails?.totalStock
+    ) {
+      toast({
+        title: `Only ${productDetails?.totalStock} items available for size ${selectedSize}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    dispatch(
+      addToCart({
+        userId: user?.id,
+        productId: productDetails?._id,
+        size: selectedSize,
+        quantity: 1,
+        productName: `${productDetails?.title} - ${selectedSize}`,
+      })
+    ).then((res) => {
+      if (res?.payload?.success) {
+        dispatch(fetchCartItems(user?.id));
+        toast({
+          title: `Added size ${selectedSize} to cart`,
+        });
+      }
+    });
+  };
 
 
   const handleDialogClose = () => {
