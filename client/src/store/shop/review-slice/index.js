@@ -20,7 +20,7 @@ export const addReview = createAsyncThunk(
 
 export const getReviews = createAsyncThunk("/order/getReviews", async (id) => {
   const response = await axios.get(
-    `${import.meta.env.VITE_API_URL}api/shop/review/${id}`
+    `${import.meta.env.VITE_API_URL}/api/shop/review/${id}` // ✅ fixed slash
   );
 
   return response.data;
