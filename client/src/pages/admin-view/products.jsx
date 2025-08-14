@@ -100,14 +100,22 @@ function AdminProducts() {
     });
   }
 
-  function isFormValid() {
-    return (
-      uploadedImageUrl && // ✅ image must be uploaded
-      Object.keys(formData)
-        .filter((key) => key !== "averageReview" && key !== "image")
-        .every((key) => formData[key] && formData[key].toString().trim() !== "")
-    );
-  }
+function isFormValid() {
+  const hasImage = uploadedImageUrl || formData.image; // ✅ allow new or existing image
+
+  // ❌ Prevent submit while image is uploading
+  if (imageLoadingState) return false;
+
+  return (
+    hasImage &&
+    Object.keys(formData)
+      .filter((key) => key !== "averageReview" && key !== "image")
+      .every(
+        (key) => formData[key] && formData[key].toString().trim() !== ""
+      )
+  );
+}
+
 
   useEffect(() => {
     dispatch(fetchAllProducts());
