@@ -219,6 +219,7 @@ const updateCartItemQty = async (req, res) => {
 const deleteCartItem = async (req, res) => {
   try {
     const { userId, productId } = req.params;
+
     if (!userId || !productId) {
       return res.status(400).json({
         success: false,
@@ -238,8 +239,11 @@ const deleteCartItem = async (req, res) => {
       });
     }
 
+    // Filter items safely, even if productId is null
     cart.items = cart.items.filter(
-      (item) => item.productId._id.toString() !== productId
+      (item) =>
+        item.productId &&
+        item.productId._id.toString() !== productId.toString()
     );
 
     await cart.save();
@@ -249,7 +253,7 @@ const deleteCartItem = async (req, res) => {
       select: "image title price salePrice",
     });
 
-    const populateCartItems = cart.items.map((item) => ({
+    const populatedCartItems = cart.items.map((item) => ({
       productId: item.productId ? item.productId._id : null,
       image: item.productId ? item.productId.image : null,
       title: item.productId ? item.productId.title : "Product not found",
@@ -260,19 +264,17 @@ const deleteCartItem = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: {
-        ...cart._doc,
-        items: populateCartItems,
-      },
+      data: populatedCartItems, // ✅ return only array to match frontend expectation
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: "Error",
+      message: "Error deleting cart item",
     });
   }
 };
+
 
 module.exports = {
   addToCart,
