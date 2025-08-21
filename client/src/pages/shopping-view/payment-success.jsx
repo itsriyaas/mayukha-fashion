@@ -11,20 +11,28 @@ function PaymentSuccessPage() {
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+   useEffect(() => {
     if (!orderId) return;
+
     const fetchOrder = async () => {
       try {
         const { data } = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/shop/order/details/${orderId}`
         );
         setOrderData(data.data);
+
+        // 🔥 Trigger backend email API
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/shop/order/payment-success`,
+          { orderId: data.data._id }
+        );
       } catch (error) {
         console.error("Error fetching order details:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchOrder();
   }, [orderId]);
 

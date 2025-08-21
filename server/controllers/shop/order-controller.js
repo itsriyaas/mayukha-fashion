@@ -1,9 +1,12 @@
-const crypto = require("crypto"); // <-- Add this line
+const crypto = require("crypto");
 const razorpay = require("../../helpers/razorpay");
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
 const mongoose = require("mongoose");
+const sendEmail = require("../../helpers/sendEmail.js");
+const User = require("../../models/User.js")
+
 const createOrder = async (req, res) => {
   try {
     const { totalAmount } = req.body;
@@ -146,9 +149,61 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
+//mail payment success
+const paymentSuccess = async (req, res) => {
+  const { orderId } = req.body;
+
+  try {
+    // 1. Get order
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, error: "Order not found" });
+    }
+
+    // 2. Get user
+    const user = await User.findById(order.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    // 3. Build email
+    const htmlContent = `
+      <h2>✅ Order Confirmation</h2>
+<p>Hi ${user.userName},</p>
+<p>Thank you for your purchase!</p>
+<p><strong>Order ID:</strong> ${order._id}</p>
+<p><strong>Total:</strong> ₹${order.totalAmount}</p>
+
+<p>
+  <a href="https://mayukha-fashion.vercel.app/shop/account"
+     style="display:inline-block; 
+            padding:12px 20px; 
+            background-color:#4CAF50; 
+            color:#fff; 
+            text-decoration:none; 
+            border-radius:6px; 
+            font-weight:bold;">
+    📄 Download Invoice
+  </a>
+</p>
+
+<p>We’ll notify you when your order ships.</p>
+    `;
+
+    // 4. Send email
+    await sendEmail(user.email, "Your Order Confirmation", htmlContent);
+
+    res.json({ success: true, message: "Payment success & email sent!" });
+  } catch (err) {
+    console.error("PaymentSuccess Error:", err);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createOrder,
   capturePayment,
   getAllOrdersByUser,
   getOrderDetails,
+  paymentSuccess
 };
