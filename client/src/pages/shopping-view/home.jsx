@@ -32,11 +32,11 @@ import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import { getFeatureImages } from "@/store/common-slice";
 
 const categoriesWithIcon = [
-  { id: "dhoti", label: "Set Mundu", image: "https://image3.mouthshut.com/images/imagesp/925754482s.jpg" },
-  { id: "women", label: "New Arrivals", image: "https://b0bcebf4-d767-420b-9f5a-cccfc5015c46.selstorage.ru/iblock/49b/bu6511f8k62f684xggbodhupqfcq1l80.jpg" },
-  { id: "offer", label: "Offer Products", image: "https://static.vecteezy.com/system/resources/previews/000/327/053/large_2x/big-sale-template-banner-vector-background.jpg" },
-  { id: "kurthies", label: "Kurthies", image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi7HDVEZqNPH3M1Hn-YuROUGIgOBUsYEMKbzZb36MRfg0Iw3LRPjfqO95F_67g9_PG6Sdpps9JkDgpK-gGCRhRntPz57Ypp1knkgCjmc0H4jHnyzFlrEqPy5DPNSRwjsm6SjftveIO8s5Y/s1600/salwaar1.jpg" },
-  { id: "sarees", label: "Sarees", image: "https://puzzleit.ru/files/puzzles/223/222930/_background.jpg" },
+  { id: "dhoti", label: "Set Mundu", image: "/category/setmundu.jpg" },
+  { id: "women", label: "New Arrivals", image: "/category/new_arrival.jpg" },
+  { id: "offer", label: "Offer Products", image: "/category/offer.jpg" },
+  { id: "kurthies", label: "Kurthies", image: "/category/kurthies.jpg" },
+  { id: "sarees", label: "Sarees", image: "/category/sarees.jpg" },
 ];
 
 const brandsWithIcon = [
