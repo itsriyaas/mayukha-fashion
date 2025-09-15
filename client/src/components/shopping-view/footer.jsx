@@ -52,15 +52,15 @@ export default function Footer() {
            Thekke nada, Prumbillissery, Cherpu, Thrissur 680561
           </p>
           <p className="text-gray-300 text-sm mt-2">
-            Email: <a href="mailto:support@mahalekshmisilks.com" className="underline">support@mayukhafashionstore.com</a>
+            Email: <a href="mailto:support@mayukhafashionstore.com" className="underline">support@mayukhafashionstore.com</a>
           </p>
-          <p className="text-gray-300 text-sm mt-2">Phone: 0469 270 3030</p>
+          <p className="text-gray-300 text-sm mt-2">Phone: +91 9447447701</p>
           
           {/* Social Icons */}
           <div className="flex items-center gap-3 mt-4">
             <a href="#"><FaYoutube className="text-lg hover:text-red-500" /></a>
-            <a href="#"><FaFacebookF className="text-lg hover:text-blue-500" /></a>
-            <a href="#"><FaInstagram className="text-lg hover:text-pink-500" /></a>
+            <a href="https://www.facebook.com/profile.php?id=61572458038897" target="_blank"><FaFacebookF className="text-lg hover:text-blue-500" /></a>
+            <a href="https://www.instagram.com/mayukha_fashion_store/" target="_blank"><FaInstagram className="text-lg hover:text-pink-500" /></a>
           </div>
         </div>
       </div>

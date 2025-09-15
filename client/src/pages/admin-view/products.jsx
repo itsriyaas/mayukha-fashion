@@ -57,6 +57,7 @@ function AdminProducts() {
     // Make sure sizes is sent as an array
     const cleanedFormData = {
       ...formData,
+      totalStock: Number(formData.totalStock),  // ✅ ensure number for backend
       sizes: normalizeSizes(formData.sizes),
       image: uploadedImageUrl || formData.image, // ✅ ensure image is sent
     };
@@ -108,16 +109,21 @@ function isFormValid() {
   return (
     hasImage &&
     Object.keys(formData)
-      .filter(key => key !== "averageReview" && key !== "image")
-      .every(key => {
-        if (currentEditedId !== null) {
-          // Edit mode: allow empty fields
-          return true;
+      .filter((key) => key !== "averageReview" && key !== "image")
+      .every((key) => {
+        const value = formData[key];
+
+        // ✅ totalStock can be 0
+        if (key === "totalStock") {
+          return value !== "" && value !== null && value !== undefined;
         }
-        return formData[key] && formData[key].toString().trim() !== "";
+
+        // ✅ all other fields must be non-empty
+        return value !== "" && value !== null && value !== undefined;
       })
   );
 }
+
 
 
 
@@ -125,17 +131,23 @@ function isFormValid() {
     dispatch(fetchAllProducts());
   }, [dispatch]);
 
-  function handleEdit(product) {
-    setOpenCreateProductsDialog(true);
-    setCurrentEditedId(product?._id);
-    setFormData({
-      ...product,
-      sizes: Array.isArray(product?.sizes)
-        ? product.sizes.join(", ")
-        : product.sizes || "",
-    });
-    setUploadedImageUrl(product?.image || "");
-  }
+function handleEdit(product) {
+  setOpenCreateProductsDialog(true);
+  setCurrentEditedId(product?._id);
+
+  setFormData({
+    ...product,
+     totalStock: product?.totalStock !== undefined && product?.totalStock !== null
+    ? product.totalStock.toString()
+    : "", // ✅ force string for input
+    sizes: Array.isArray(product?.sizes)
+      ? product.sizes.join(", ")
+      : product.sizes || "",
+  });
+
+  setUploadedImageUrl(product?.image || "");
+}
+
 
   return (
     <Fragment>
