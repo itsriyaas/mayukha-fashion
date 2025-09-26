@@ -5,12 +5,13 @@ export default function Footer() {
   return (
     <footer className="bg-[#1c222c] text-white py-10 px-5">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
-        
+
         {/* Logo & Description */}
         <div className="sm:col-span-2">
           <img src="/logo.png" alt="footer_logo" width={'200'} />
-          <p className="text-gray-300 text-sm leading-relaxed">
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quos expedita fuga odit, accusamus magnam, nulla minima blanditiis beatae voluptates vel natus nisi at? Commodi, maxime. Exercitationem soluta quos sequi minus.
+          <p className="text-gray-300 text-sm leading-relaxed mt-2">
+            Introducing Mayukha Fashion Store - your complete ladies' store!
+            We offer a unique selection of ladies fashion wear, ethnic collections, bridal wear, designer sarees, kurtis, churidars, western outfits, handbags, and accessories at Kaimals Associates' Mayukha Fashion Store.
           </p>
         </div>
 
@@ -49,13 +50,13 @@ export default function Footer() {
           <h4 className="font-semibold mb-3">Contact Us</h4>
           <p className="text-gray-300 text-sm">
             Mayukha Fashion Store<br />
-           Thekke nada, Prumbillissery, Cherpu, Thrissur 680561
+            Thekke nada, Prumbillissery, Cherpu, Thrissur 680561
           </p>
           <p className="text-gray-300 text-sm mt-2">
             Email: <a href="mailto:support@mayukhafashionstore.com" className="underline">support@mayukhafashionstore.com</a>
           </p>
           <p className="text-gray-300 text-sm mt-2">Phone: +91 9447447701</p>
-          
+
           {/* Social Icons */}
           <div className="flex items-center gap-3 mt-4">
             <a href="#"><FaYoutube className="text-lg hover:text-red-500" /></a>
